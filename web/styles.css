@@ -1,0 +1,253 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 2vh;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #999;
+  color: #000;
+  overflow: hidden;
+}
+
+#ticker {
+  position: relative;
+}
+#ticker #back {
+  display: block;
+  position: absolute;
+  left:0;
+  right: 60vw;
+  top: 0;
+  bottom: 0;
+}
+#ticker #forward {
+  display: block;
+  position: absolute;
+  left:60vw;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+#ticker #middle {
+  display: block;
+  position: absolute;
+  left:40vw;
+  right: 40vw;
+  top: 0;
+  bottom: 0;
+}
+
+#ticker .row {
+  text-align: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  height: 30vh;
+  display: flex;
+  padding:1vw;
+}
+#ticker .row div.boxed {
+  background-color: #fff;
+  font-size: 19vh;
+  height: 30vh;
+  line-height:30vh;
+  text-align: center;
+  display:inline-block;
+  border-radius: 1vw;
+  margin:0.7vw;
+  vertical-align: middle; 
+  flex: 1;
+  flex-grow: 1;
+  font-weight: 500;
+  overflow: hidden;
+
+}
+
+/* CSS animation refresh method. Not currently used */
+/* #ticker .row div.boxed.refreshAnimation {
+
+  -webkit-animation: 250ms refresh 1 normal running;
+  -moz-animation: 250ms refresh 1 normal running;
+  -o-animation: 250ms refresh 1 normal running;
+  animation: 250ms refresh 1 normal running;
+}
+
+@keyframes refresh {
+  0% { background-color: #000; }
+  99% { background-color: #000; }
+  100% { background-color: #fff; }
+}
+@-webkit-keyframes refresh {
+  0% { background-color: #000; }
+  99% { background-color: #000; }
+  100% { background-color: #fff; }
+}
+@-moz-keyframes refresh {
+  0% { background-color: #000; }
+  99% { background-color: #000; }
+  100% { background-color: #fff; }
+}
+
+@-o-keyframes refresh {
+  0% { background-color: #000; }
+  99% { background-color: #000; }
+  100% { background-color: #fff; }
+} */
+
+.refresh {
+  background-color: #000 !important;
+}
+
+#settings {
+  background-color: #fff;
+  position: absolute;
+  top:1vw;
+  left:1vw;
+  bottom:1vw;
+  right:1vw;
+  border-radius: 1vw;
+  display: none;
+  
+}
+
+#settings.visible {
+  display: flex;
+  flex-direction: column;
+
+}
+.cols {
+  display: flex;
+  flex-direction: row;
+}
+.col {
+  flex:1;
+  padding: 1.5vw;
+}
+.col .scroller {
+  overflow-y: scroll;
+  background-color: #aaa;
+  height: 60vh;
+  text-align: center;
+}
+
+#load_symbols {
+  margin:5vh auto 0 auto;
+}
+#settings footer, #settings header {
+  height:10vh;
+  flex-grow: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px dotted #888;
+  padding-bottom: 1vw;
+}
+
+
+#settings footer div {
+  text-align: left;
+  padding-left: 2vw;
+}
+#settings footer .buttons {
+  text-align: right;
+  padding-right: 2vw;
+}
+#settings .action {
+flex-grow: 0;
+width: 7vw;
+padding: 2vw;
+text-align: right;
+}
+#settings div.content, #settings h1 {
+  flex:1;
+  flex-grow: 1;
+}
+#settings h1 {
+  margin:0.4em 0;
+  font-size: 5vh;
+}
+#settings h3 {
+  margin: 0 0 2vw 0;
+  font-size: 3vh;
+  text-align: center;
+  color: #666;
+}
+#settings h4 {
+  margin: 4vw 0 2vw 0;
+  font-size: 2.5vh;
+  text-align: center;
+}
+#settings p {
+  text-align: center;
+}
+#settings button {
+padding: 1.5vh 3vh;
+font-size: 3vh;
+font-weight: bold;
+border: 0px;
+background-color: #333;
+color: #ddd;
+border-radius: 1vw;
+}
+
+#settings button:active {
+  background-color: #ddd;
+  color: #333;
+}
+#settings .scroller button.symbol {
+  font-size: 2.8vh;
+  line-height: 5vh;
+  text-align: left;
+  background-color: #fff;
+  color: #333;
+  margin:0.75vw 0.75vw 0 0.75vw ;
+  display: block;
+  width:25vw;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  overflow-x: hidden;
+
+}
+#settings .scroller button.symbol:last-child {
+  margin-bottom: 0.75vw;
+}
+#settings .scroller button.symbol:active {
+  background-color: #333;
+  color: #fff;
+}
+#settings #symbols_current button.symbol::after {
+content: ' [-]';
+}
+
+#settings #symbols_all button.symbol::after {
+  content: ' [+]';
+  }
+
+  .picker {
+    display: flex;
+    flex-direction: row;
+    margin: 0 2vw;
+  }
+
+  #settings  .picker button {
+    padding: 1vh 2vh;
+    flex:0;
+  }
+.picker .value {
+  flex:1;
+  text-align: center;
+  font-size: 2.5vw;
+}
+
+::-webkit-scrollbar {
+  width: 3vw;
+  background-color: #666;
+}
+::-webkit-scrollbar-thumb:vertical {
+  background: #000;
+}
