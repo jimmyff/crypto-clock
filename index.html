@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+     <meta charset="utf-8">
+     <meta http-equiv="X-UA-Compatible"
+           content="IE=edge">
+     <meta name="viewport"
+           content="width=device-width, initial-scale=1.0">
+     <title>Crypto-Clock</title>
+     <link rel="stylesheet"
+           href="styles.css">
+     <link rel="icon"
+           href="favicon.ico">
+     <script defer
+             src="main.dart.js"></script>
+     <link rel="preconnect"
+           href="https://fonts.gstatic.com">
+     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;442&display=swap"
+           rel="stylesheet">
+</head>
+
+<body>
+     <div id="ticker">
+          <section class="row">
+               <div id="c0_0"
+                    class="boxed">&nbsp;</div>
+               <div id="c0_1"
+                    class="boxed">&nbsp;</div>
+               <div id="c0_2"
+                    class="boxed">&nbsp;</div>
+               <div id="c0_3"
+                    class="boxed">&nbsp;</div>
+               <div id="c0_4"
+                    class="boxed">&nbsp;</div>
+               <div id="c0_5"
+                    class="boxed">&nbsp;</div>
+               <div id="c0_6"
+                    class="boxed">&nbsp;</div>
+               <!-- <div id="c0_7"
+           class="boxed">&nbsp;</div> -->
+          </section>
+          <section class="row">
+               <div id="c1_0"
+                    class="boxed">&nbsp;</div>
+               <div id="c1_1"
+                    class="boxed">&nbsp;</div>
+               <div id="c1_2"
+                    class="boxed">&nbsp;</div>
+               <div id="c1_3"
+                    class="boxed">&nbsp;</div>
+               <div id="c1_4"
+                    class="boxed">&nbsp;</div>
+               <div id="c1_5"
+                    class="boxed">&nbsp;</div>
+               <div id="c1_6"
+                    class="boxed">&nbsp;</div>
+               <!-- <div id="c1_7"
+           class="boxed">&nbsp;</div> -->
+          </section>
+          <section class="row">
+               <div id="c2_0"
+                    class="boxed">&nbsp;</div>
+               <div id="c2_1"
+                    class="boxed">&nbsp;</div>
+               <div id="c2_2"
+                    class="boxed">&nbsp;</div>
+               <div id="c2_3"
+                    class="boxed">&nbsp;</div>
+               <div id="c2_4"
+                    class="boxed">&nbsp;</div>
+               <div id="c2_5"
+                    class="boxed">&nbsp;</div>
+               <div id="c2_6"
+                    class="boxed">&nbsp;</div>
+               <!-- <div id="c2_7"
+           class="boxed">&nbsp;</div> -->
+          </section>
+          <div id="back">&nbsp;</div>
+          <div id="middle">&nbsp;</div>
+          <div id="forward">&nbsp;</div>
+     </div>
+     <div id="settings">
+          <header>
+               <div class="action"></div>
+               <h1>crypto-clock</h1>
+               <div class="action">
+                    <button id="close">X</button>
+               </div>
+          </header>
+          <div class="content cols">
+               <div class="col">
+                    <h3>Available symbols</h3>
+                    <div id="symbols_all"
+                         class="scroller"><button id="load_symbols">Load
+                              symbols</button>
+                    </div>
+               </div>
+               <div class="col">
+                    <h3>Current symbols</h3>
+                    <div id="symbols_current"
+                         class="scroller"></div>
+               </div>
+               <div class="col">
+                    <h3>Settings</h3>
+                    <h4>Update interval</h4>
+                    <div class="picker">
+                         <button class="back"
+                                 id="interval_back">&#10094;</button>
+                         <div id="interval"
+                              class="value"></div>
+                         <button class="forward"
+                                 id="interval_forward">&#10095;</button>
+                    </div>
+                    <p>Seconds between updates. More updates consumes more
+                         power.</p>
+                    <h4>Updates per symbol</h4>
+                    <div class="picker">
+                         <button class="back"
+                                 id="intervals_per_element_back">&#10094;</button>
+                         <div id="intervals_per_element"
+                              class="value"></div>
+                         <button class="forward"
+                                 id="intervals_per_element_forward">&#10095;</button>
+                    </div>
+                    <p>Updates before moving to next symbol.</p>
+               </div>
+          </div>
+          <footer>
+               <div class="content">github.com/jimmyff/crypto-clock<br />Author:
+                    jimmyff<br />Powered by the Binance API</div>
+               <div class="content buttons">
+                    <button id="refresh">Refresh</button>
+                    <button id="reset">Reset</button>
+                    <button id="save">Save</button>
+               </div>
+          </footer>
+     </div>
+</body>
+
+</html>
