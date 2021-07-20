@@ -9,9 +9,19 @@
             "command": "dart run build_runner serve"
         },
         {
+            "label": "Serve (debug)",
+            "type": "shell",
+            "command": "dart run build_runner serve --config debug"
+        },
+        {
             "label": "Build",
             "type": "shell",
             "command": "dart run build_runner build"
+        },
+        {
+            "label": "Build (debug)",
+            "type": "shell",
+            "command": "dart run build_runner build --config debug"
         }
     ]
 }

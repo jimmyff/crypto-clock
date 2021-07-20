@@ -7,6 +7,7 @@ import 'settings.dart';
 
 class CryptoClock {
   static const _testClock = false;
+  bool _networkError = false;
   int _testClockOffset = 0;
 
   late CryptoClockSettings _settings;
@@ -105,7 +106,7 @@ class CryptoClock {
 
       // start clock timer if neccessary (updates time at 30s intervals)
       clockTimer ??= Timer.periodic(Duration(seconds: 30), (timer) => _tick());
-    } else if (temporaryRefresh) {
+    } else if (temporaryRefresh && !_networkError) {
       window.location.reload();
     } else {
       // cancel the clock timer if neccessary
@@ -210,15 +211,14 @@ class CryptoClock {
           'https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol['symbol']}'));
       data = json.decode(response.body);
 
-      // Replacing the above with this mock request resolves the listeners leak
-      // data = json.decode(
-      //     '{"symbol":"BTCUSDT","priceChangePercent":"${Random().nextInt(7)}","lastPrice":"${Random().nextInt(2000)}"}');
+      _networkError = false;
 
       // Handle network error
     } catch (e) {
       _displayClock(0);
       _displayString(row: 1, end: 'NETWORK');
       _displayString(row: 2, end: ' ERROR ');
+      _networkError = true;
       return;
     } finally {
       client.close();
@@ -254,11 +254,26 @@ class CryptoClock {
     }
 
     // Display price change on the bottom row
-    final percentChange =
-        min(max(double.parse(data['priceChangePercent']).toInt(), -99), 99);
+
     _displayString(row: 2, start: '24h');
     _displayString(
-        row: 2, end: (percentChange > 0 ? '+' : '') + '$percentChange%');
+        row: 2, end: _changePercent(double.parse(data['priceChangePercent'])));
+  }
+
+  /// Returns a 4 character (max) string of changePercent double
+  /// eg: -2.5 = -3%, -1.0 = -1%, -0.6 = -.6%, 0.7 = +.7%, 1.5 = +2%
+  /// Limited to -99 & +99: -120.0 = -99%, 120.0 = +99%
+  String _changePercent(double v) {
+    print(v);
+    if (v == 0.0) return '0%';
+    final posNeg = v >= 0 ? '+' : '-';
+    // handle small changes
+    final percentStr = v > -1 && v < 1
+        ? '.' +
+            ((v * 100) / 10).toString().substring(v < 0 ? 1 : 0).substring(0, 1)
+        : min(max(v.round(), -99), 99).toString().substring(v < 0 ? 1 : 0);
+
+    return '$posNeg$percentStr%';
   }
 
   void _clearDisplay() {
@@ -268,6 +283,7 @@ class CryptoClock {
   Future _updateDisplay() async {
     final futures = <Future>[];
 
+    // Iterate over the rows and columns and update element if required
     for (var r = 0, rl = 3; r < rl; r++) {
       for (var c = 0, cl = 7; c < cl; c++) {
         final character = display[r][c] == ' ' ? '' : display[r][c];
@@ -276,7 +292,7 @@ class CryptoClock {
           // querySelector('#c${r}_$c')!
           //   ..innerText = display[r][c]
           //   ..classes.remove('refreshAnimation');
-          // await Future.delayed(Duration(milliseconds: 70));
+          // await Future.delayed(Duration(milliseconds: 100));
 
           // querySelector('#c${r}_$c')!
           //   ..innerText = display[r][c]
@@ -286,6 +302,8 @@ class CryptoClock {
           elements[r][c]
             ..classes.add('refresh')
             ..innerText = character;
+          // elements[r][c].innerText = character;
+          // print('$r $c $character');
 
           futures.add((int r, int c) async {
             await Future.delayed(Duration(milliseconds: 300));
