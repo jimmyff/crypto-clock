@@ -67,6 +67,7 @@ html, body {
 
 }
 
+
 /* CSS animation refresh method. Not currently used */
 /* #ticker .row div.boxed.refreshAnimation {
 
@@ -177,12 +178,13 @@ text-align: right;
   color: #666;
 }
 #settings h4 {
-  margin: 4vw 0 2vw 0;
+  margin: 2.5vw 0 2vw 0;
   font-size: 2.5vh;
   text-align: center;
 }
 #settings p {
   text-align: center;
+  font-size: 1.9vh;
 }
 #settings button {
 padding: 1.5vh 3vh;

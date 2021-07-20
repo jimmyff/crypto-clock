@@ -1,0 +1,1 @@
+{"isEntrypoint":false,"deps":["http|lib/browser_client.dart","timezone|lib/browser.dart"],"parts":[],"conditionalDeps":[],"sdkDeps":["html","math","async","convert"],"hasMain":false}

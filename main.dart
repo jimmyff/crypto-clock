@@ -7,6 +7,7 @@ import 'settings.dart';
 
 class CryptoClock {
   static const _testClock = false;
+  bool _networkError = false;
   int _testClockOffset = 0;
 
   late CryptoClockSettings _settings;
@@ -34,23 +35,31 @@ class CryptoClock {
     elements = List.generate(
         3, (r) => List.generate(7, (c) => querySelector('#c${r}_$c')!));
 
+    final uri = Uri.parse(window.location.toString());
+
     client = http.BrowserClient();
-    _settings = CryptoClockSettings(client);
-    _initDom();
+    _settings = CryptoClockSettings(client, uri.queryParameters['timezone']);
+
     _start();
   }
   Future _start() async {
-    // TODO: intro currently disabled
-    final showIntro = false;
-    if (showIntro) {
+    if (_settings.showIntro()) {
       _displayString(row: 0, end: 'crypto');
       _displayString(row: 1, end: 'clock');
       _displayString(row: 2, end: 'v1.0');
       await _updateDisplay();
+      await Future.delayed(Duration(milliseconds: 300));
+      _clearDisplay();
+      await _updateDisplay();
+      _displayClock((await _settings.getTime()), 1);
+      await _updateDisplay();
       await Future.delayed(Duration(milliseconds: 500));
+      _clearDisplay();
+      await _updateDisplay();
     }
     appTimer = Timer.periodic(
         Duration(seconds: _settings.interval), (timer) => _tick());
+    _initDom();
     await _tick();
   }
 
@@ -91,29 +100,36 @@ class CryptoClock {
   Future _tick({bool forcePrice = false}) async {
     _clearDisplay();
 
-    final now = DateTime.now();
-    final afterNextTick =
-        DateTime.now().add(Duration(seconds: _settings.interval));
+    final DateTime now = _testClock
+        ? (await _settings.getTime()).add(Duration(hours: _testClockOffset))
+        : (await _settings.getTime());
+
+    final afterNextTick = now.add(Duration(seconds: _settings.interval));
     final showClock =
         [59, 0].contains(now.minute) || now.hour != afterNextTick.hour;
 
-    // Temporary fix for memory lkea, refreshes the device every hour
-    final temporaryRefresh = now.minute < 30 && afterNextTick.minute > 30;
+    // Could refresh screen if half past the hour and refresh hour matches
+    final temporaryRefresh = _settings.refresh == 0
+        ? false
+        : now.minute < 30 &&
+            afterNextTick.minute > 30 &&
+            !_settings.recentlyRefreshed() &&
+            (now.hour + 1) % _settings.refresh == 0;
 
-    if (!forcePrice && (_testClock || showClock)) {
-      _clockScreen();
+    if (temporaryRefresh && !_networkError) {
+      _settings.refreshWindow();
+    } else if (!forcePrice && (_testClock || showClock)) {
+      _clockScreen(now);
 
       // start clock timer if neccessary (updates time at 30s intervals)
       clockTimer ??= Timer.periodic(Duration(seconds: 30), (timer) => _tick());
-    } else if (temporaryRefresh) {
-      window.location.reload();
     } else {
       // cancel the clock timer if neccessary
       if (clockTimer != null) {
         clockTimer!.cancel();
         clockTimer = null;
       }
-      await _tickerScreen();
+      await _tickerScreen(now);
     }
     await _updateDisplay();
   }
@@ -133,27 +149,20 @@ class CryptoClock {
   }
 
   /// Puts the time on the display
-  void _displayClock(int row) {
-    final now = _testClock
-        ? DateTime.now().add(Duration(hours: _testClockOffset))
-        : DateTime.now();
+  void _displayClock(DateTime now, int row) {
     final hour = now.hour.toString().padLeft(2, '0');
     final minute = now.minute.toString().padLeft(2, '0');
     _displayString(row: row, end: '$hour:$minute ');
   }
 
   /// Displays the clock and sun/moon
-  void _clockScreen() {
+  void _clockScreen(DateTime time) {
     final sunRise = 7;
     final daylight = 12;
     final sunset = 19;
     final nightHours = 24 - daylight;
 
-    final now = _testClock
-        ? DateTime.now().add(Duration(hours: _testClockOffset))
-        : DateTime.now();
-
-    _displayClock(1);
+    _displayClock(time, 1);
 
     var skyObject = '';
     var skyOffset = 0;
@@ -167,28 +176,30 @@ class CryptoClock {
     }
 
     // Frequency of stars depending on how late it is
-    if (now.hour >= 23 || now.hour <= 2) {
+    if (time.hour >= 23 || time.hour <= 2) {
       _addStars(0, 2);
       _addStars(2, 2);
-    } else if (now.hour >= 21 || now.hour <= 4) {
+    } else if (time.hour >= 21 || time.hour <= 4) {
       _addStars(0, 1);
       _addStars(2, 1);
     }
 
     // calculate the position in the sky for the sun/moon
-    if (now.hour >= sunRise && now.hour < sunRise + daylight) {
+    if (time.hour >= sunRise && time.hour < sunRise + daylight) {
       skyObject = '☀';
-      skyOffset = (((now.hour - sunRise) / daylight) * 10).ceil();
+      skyOffset = (((time.hour - sunRise) / daylight) * 10).ceil();
     } else {
       skyObject = '☾';
 
-      final percentageThroughNight = (now.hour <= sunRise
-              ? (24 + now.hour - sunset)
-              : (now.hour - sunset)) /
+      final percentageThroughNight = (time.hour <= sunRise
+              ? (24 + time.hour - sunset)
+              : (time.hour - sunset)) /
           nightHours;
       skyOffset = (10 * percentageThroughNight).ceil();
     }
 
+    // Reverse offset so we rise in the east and set in the west
+    skyOffset = 10 - skyOffset;
     // Place the sun/moon at the correct position
     final row =
         [0, 10].contains(skyOffset) ? 2 : ([1, 9].contains(skyOffset) ? 1 : 0);
@@ -199,7 +210,7 @@ class CryptoClock {
   }
 
   /// Makes a API request and updates display with latest price
-  Future _tickerScreen() async {
+  Future _tickerScreen(DateTime time) async {
     if (++currentIntervalForSymbol >= _settings.intervalsPerSymbol) {
       _symbolForward();
     }
@@ -210,15 +221,14 @@ class CryptoClock {
           'https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol['symbol']}'));
       data = json.decode(response.body);
 
-      // Replacing the above with this mock request resolves the listeners leak
-      // data = json.decode(
-      //     '{"symbol":"BTCUSDT","priceChangePercent":"${Random().nextInt(7)}","lastPrice":"${Random().nextInt(2000)}"}');
+      _networkError = false;
 
       // Handle network error
     } catch (e) {
-      _displayClock(0);
+      _displayClock(time, 0);
       _displayString(row: 1, end: 'NETWORK');
       _displayString(row: 2, end: ' ERROR ');
+      _networkError = true;
       return;
     } finally {
       client.close();
@@ -229,7 +239,7 @@ class CryptoClock {
         ['lastPrice', 'priceChangePercent']
             .where((e) => !data.containsKey(e))
             .isNotEmpty) {
-      _displayClock(0);
+      _displayClock(time, 0);
       _displayString(row: 1, end: ' PARSE ');
       _displayString(row: 2, end: ' ERROR ');
       return;
@@ -254,11 +264,26 @@ class CryptoClock {
     }
 
     // Display price change on the bottom row
-    final percentChange =
-        min(max(double.parse(data['priceChangePercent']).toInt(), -99), 99);
+
     _displayString(row: 2, start: '24h');
     _displayString(
-        row: 2, end: (percentChange > 0 ? '+' : '') + '$percentChange%');
+        row: 2, end: _changePercent(double.parse(data['priceChangePercent'])));
+  }
+
+  /// Returns a 4 character (max) string of changePercent double
+  /// eg: -2.5 = -3%, -1.0 = -1%, -0.6 = -.6%, 0.7 = +.7%, 1.5 = +2%
+  /// Limited to -99 & +99: -120.0 = -99%, 120.0 = +99%
+  String _changePercent(double v) {
+    print(v);
+    if (v == 0.0) return '0%';
+    final posNeg = v >= 0 ? '+' : '-';
+    // handle small changes
+    final percentStr = v > -1 && v < 1
+        ? '.' +
+            ((v * 100) / 10).toString().substring(v < 0 ? 1 : 0).substring(0, 1)
+        : min(max(v.round(), -99), 99).toString().substring(v < 0 ? 1 : 0);
+
+    return '$posNeg$percentStr%';
   }
 
   void _clearDisplay() {
@@ -268,6 +293,7 @@ class CryptoClock {
   Future _updateDisplay() async {
     final futures = <Future>[];
 
+    // Iterate over the rows and columns and update element if required
     for (var r = 0, rl = 3; r < rl; r++) {
       for (var c = 0, cl = 7; c < cl; c++) {
         final character = display[r][c] == ' ' ? '' : display[r][c];
@@ -276,7 +302,7 @@ class CryptoClock {
           // querySelector('#c${r}_$c')!
           //   ..innerText = display[r][c]
           //   ..classes.remove('refreshAnimation');
-          // await Future.delayed(Duration(milliseconds: 70));
+          // await Future.delayed(Duration(milliseconds: 100));
 
           // querySelector('#c${r}_$c')!
           //   ..innerText = display[r][c]
@@ -286,6 +312,8 @@ class CryptoClock {
           elements[r][c]
             ..classes.add('refresh')
             ..innerText = character;
+          // elements[r][c].innerText = character;
+          // print('$r $c $character');
 
           futures.add((int r, int c) async {
             await Future.delayed(Duration(milliseconds: 300));

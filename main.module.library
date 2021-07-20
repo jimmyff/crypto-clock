@@ -1,0 +1,1 @@
+{"isEntrypoint":true,"deps":["http|lib/browser_client.dart","crypto_clock|web/settings.dart"],"parts":[],"conditionalDeps":[],"sdkDeps":["html","math","async","convert"],"hasMain":true}
