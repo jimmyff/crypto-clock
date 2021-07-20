@@ -80,7 +80,8 @@
           <div id="middle">&nbsp;</div>
           <div id="forward">&nbsp;</div>
      </div>
-     <div id="settings">
+     <div id="settings"
+          class="unvisible">
           <header>
                <div class="action"></div>
                <h1>crypto-clock</h1>
@@ -112,8 +113,7 @@
                          <button class="forward"
                                  id="interval_forward">&#10095;</button>
                     </div>
-                    <p>Seconds between updates. More updates consumes more
-                         power.</p>
+                    <p>Seconds between updates. More updates = more power.</p>
                     <h4>Updates per symbol</h4>
                     <div class="picker">
                          <button class="back"
@@ -124,6 +124,16 @@
                                  id="intervals_per_element_forward">&#10095;</button>
                     </div>
                     <p>Updates before moving to next symbol.</p>
+                    <h4>Periodic refresh</h4>
+                    <div class="picker">
+                         <button class="back"
+                                 id="refresh_back">&#10094;</button>
+                         <div id="refresh_value"
+                              class="value"></div>
+                         <button class="forward"
+                                 id="refresh_forward">&#10095;</button>
+                    </div>
+                    <p>Hours between refresh.</p>
                </div>
           </div>
           <footer>

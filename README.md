@@ -1,6 +1,6 @@
 # crypto-clock
 
-A dashboard for cyrpto currencies intended to be shown on eink devices such as the Amazon Kindle. The project was inspired by cyrpto price tickers such as the "block clock". The crypto data comes from Binance's API. You can [read the article](https://medium.com/@jimmyff/crypto-clock-the-crypto-currency-ticker-that-runs-on-a-kindle-2bc601244556?source=friends_link&sk=47d142779ce7969e8ee82a9ebb770a7f) I wrote detailing the creation of the Cryto Clock.
+A dashboard for cyrpto currencies intended to be shown on eink devices such as the Amazon Kindle. The project was inspired by cyrpto price tickers such as the 'block clock'. The crypto data comes from Binance's API. You can [read my article](https://medium.com/@jimmyff/crypto-clock-the-crypto-currency-ticker-that-runs-on-a-kindle-2bc601244556?source=friends_link&sk=47d142779ce7969e8ee82a9ebb770a7f) detailing the Cryto Clock project.
 
 ---
 

@@ -35,23 +35,31 @@ class CryptoClock {
     elements = List.generate(
         3, (r) => List.generate(7, (c) => querySelector('#c${r}_$c')!));
 
+    final uri = Uri.parse(window.location.toString());
+
     client = http.BrowserClient();
-    _settings = CryptoClockSettings(client);
-    _initDom();
+    _settings = CryptoClockSettings(client, uri.queryParameters['timezone']);
+
     _start();
   }
   Future _start() async {
-    // TODO: intro currently disabled
-    final showIntro = false;
-    if (showIntro) {
+    if (_settings.showIntro()) {
       _displayString(row: 0, end: 'crypto');
       _displayString(row: 1, end: 'clock');
       _displayString(row: 2, end: 'v1.0');
       await _updateDisplay();
+      await Future.delayed(Duration(milliseconds: 300));
+      _clearDisplay();
+      await _updateDisplay();
+      _displayClock((await _settings.getTime()), 1);
+      await _updateDisplay();
       await Future.delayed(Duration(milliseconds: 500));
+      _clearDisplay();
+      await _updateDisplay();
     }
     appTimer = Timer.periodic(
         Duration(seconds: _settings.interval), (timer) => _tick());
+    _initDom();
     await _tick();
   }
 
@@ -92,29 +100,36 @@ class CryptoClock {
   Future _tick({bool forcePrice = false}) async {
     _clearDisplay();
 
-    final now = DateTime.now();
-    final afterNextTick =
-        DateTime.now().add(Duration(seconds: _settings.interval));
+    final DateTime now = _testClock
+        ? (await _settings.getTime()).add(Duration(hours: _testClockOffset))
+        : (await _settings.getTime());
+
+    final afterNextTick = now.add(Duration(seconds: _settings.interval));
     final showClock =
         [59, 0].contains(now.minute) || now.hour != afterNextTick.hour;
 
-    // Temporary fix for memory lkea, refreshes the device every hour
-    final temporaryRefresh = now.minute < 30 && afterNextTick.minute > 30;
+    // Could refresh screen if half past the hour and refresh hour matches
+    final temporaryRefresh = _settings.refresh == 0
+        ? false
+        : now.minute < 30 &&
+            afterNextTick.minute > 30 &&
+            !_settings.recentlyRefreshed() &&
+            (now.hour + 1) % _settings.refresh == 0;
 
-    if (!forcePrice && (_testClock || showClock)) {
-      _clockScreen();
+    if (temporaryRefresh && !_networkError) {
+      _settings.refreshWindow();
+    } else if (!forcePrice && (_testClock || showClock)) {
+      _clockScreen(now);
 
       // start clock timer if neccessary (updates time at 30s intervals)
       clockTimer ??= Timer.periodic(Duration(seconds: 30), (timer) => _tick());
-    } else if (temporaryRefresh && !_networkError) {
-      window.location.reload();
     } else {
       // cancel the clock timer if neccessary
       if (clockTimer != null) {
         clockTimer!.cancel();
         clockTimer = null;
       }
-      await _tickerScreen();
+      await _tickerScreen(now);
     }
     await _updateDisplay();
   }
@@ -134,27 +149,20 @@ class CryptoClock {
   }
 
   /// Puts the time on the display
-  void _displayClock(int row) {
-    final now = _testClock
-        ? DateTime.now().add(Duration(hours: _testClockOffset))
-        : DateTime.now();
+  void _displayClock(DateTime now, int row) {
     final hour = now.hour.toString().padLeft(2, '0');
     final minute = now.minute.toString().padLeft(2, '0');
     _displayString(row: row, end: '$hour:$minute ');
   }
 
   /// Displays the clock and sun/moon
-  void _clockScreen() {
+  void _clockScreen(DateTime time) {
     final sunRise = 7;
     final daylight = 12;
     final sunset = 19;
     final nightHours = 24 - daylight;
 
-    final now = _testClock
-        ? DateTime.now().add(Duration(hours: _testClockOffset))
-        : DateTime.now();
-
-    _displayClock(1);
+    _displayClock(time, 1);
 
     var skyObject = '';
     var skyOffset = 0;
@@ -168,28 +176,30 @@ class CryptoClock {
     }
 
     // Frequency of stars depending on how late it is
-    if (now.hour >= 23 || now.hour <= 2) {
+    if (time.hour >= 23 || time.hour <= 2) {
       _addStars(0, 2);
       _addStars(2, 2);
-    } else if (now.hour >= 21 || now.hour <= 4) {
+    } else if (time.hour >= 21 || time.hour <= 4) {
       _addStars(0, 1);
       _addStars(2, 1);
     }
 
     // calculate the position in the sky for the sun/moon
-    if (now.hour >= sunRise && now.hour < sunRise + daylight) {
+    if (time.hour >= sunRise && time.hour < sunRise + daylight) {
       skyObject = '☀';
-      skyOffset = (((now.hour - sunRise) / daylight) * 10).ceil();
+      skyOffset = (((time.hour - sunRise) / daylight) * 10).ceil();
     } else {
       skyObject = '☾';
 
-      final percentageThroughNight = (now.hour <= sunRise
-              ? (24 + now.hour - sunset)
-              : (now.hour - sunset)) /
+      final percentageThroughNight = (time.hour <= sunRise
+              ? (24 + time.hour - sunset)
+              : (time.hour - sunset)) /
           nightHours;
       skyOffset = (10 * percentageThroughNight).ceil();
     }
 
+    // Reverse offset so we rise in the east and set in the west
+    skyOffset = 10 - skyOffset;
     // Place the sun/moon at the correct position
     final row =
         [0, 10].contains(skyOffset) ? 2 : ([1, 9].contains(skyOffset) ? 1 : 0);
@@ -200,7 +210,7 @@ class CryptoClock {
   }
 
   /// Makes a API request and updates display with latest price
-  Future _tickerScreen() async {
+  Future _tickerScreen(DateTime time) async {
     if (++currentIntervalForSymbol >= _settings.intervalsPerSymbol) {
       _symbolForward();
     }
@@ -215,7 +225,7 @@ class CryptoClock {
 
       // Handle network error
     } catch (e) {
-      _displayClock(0);
+      _displayClock(time, 0);
       _displayString(row: 1, end: 'NETWORK');
       _displayString(row: 2, end: ' ERROR ');
       _networkError = true;
@@ -229,7 +239,7 @@ class CryptoClock {
         ['lastPrice', 'priceChangePercent']
             .where((e) => !data.containsKey(e))
             .isNotEmpty) {
-      _displayClock(0);
+      _displayClock(time, 0);
       _displayString(row: 1, end: ' PARSE ');
       _displayString(row: 2, end: ' ERROR ');
       return;
