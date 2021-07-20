@@ -187,10 +187,6 @@ class CryptoClockSettings {
       _saveSettings();
     });
 
-    querySelector('#refresh')!.onClick.listen((event) {
-      refreshWindow();
-    });
-
     querySelector('#load_symbols')!.onClick.listen((event) {
       _loadAllSymbols();
       querySelector('#load_symbols')!.style.display = 'none';
