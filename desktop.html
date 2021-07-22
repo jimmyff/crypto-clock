@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible"
+          content="IE=edge">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Crypto-Clock</title>
+</head>
+<style>
+    body {
+        height: 100vh;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        background: black;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    #clock {
+        margin: auto auto auto auto;
+        background-color: white;
+    }
+
+    #clockDisplay {
+        position: relative;
+    }
+
+    @media (orientation: landscape) {
+        #clock {
+            padding: 5vh;
+            border-radius: 3vh;
+        }
+
+        #clockDisplay {
+            height: 70vh;
+            width: 90vh;
+        }
+
+        #iframe {
+            border-radius: 2vh;
+        }
+    }
+
+    @media (orientation: portrait) {
+        #clock {
+            padding: 5vw;
+            border-radius: 3vw;
+        }
+
+        #clockDisplay {
+            height: 60vw;
+            width: 80vw;
+        }
+
+        #iframe {
+            border-radius: 2vw;
+        }
+    }
+
+    #iframe {
+        border: 0;
+        left: 0px;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+</style>
+
+<body>
+    <div id="clock">
+        <div id="clockDisplay"><iframe id="iframe"
+                    src="index.html"></iframe></div>
+    </div>
+</body>
+
+</html>
