@@ -57,6 +57,7 @@ class CryptoClock {
       _clearDisplay();
       await _updateDisplay();
     }
+
     appTimer = Timer.periodic(
         Duration(seconds: _settings.interval), (timer) => _tick());
     _initDom();
@@ -198,8 +199,6 @@ class CryptoClock {
       skyOffset = (10 * percentageThroughNight).ceil();
     }
 
-    // Reverse offset so we rise in the east and set in the west
-    skyOffset = 10 - skyOffset;
     // Place the sun/moon at the correct position
     final row =
         [0, 10].contains(skyOffset) ? 2 : ([1, 9].contains(skyOffset) ? 1 : 0);

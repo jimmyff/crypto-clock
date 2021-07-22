@@ -1,0 +1,15 @@
+{
+    "items": [
+        {
+            "name": "Crypto Clock",
+            "if": "\"kterm\" -ext",
+            "items": [
+                {
+                    "name": "Start Linux",
+                    "action": "sh start_gui.sh",
+                    "exitmenu": false
+                }
+            ]
+        }
+    ]
+}
