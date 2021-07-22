@@ -20,13 +20,14 @@ A dashboard for cyrpto currencies intended to be shown on eink devices such as t
 
 ## Hosted version
 
+Desktop/mobile version:
+
+[https://jimmyff.github.io/crypto-clock/desktop.html](https://jimmyff.github.io/crypto-clock/desktop.html)
+
 Dedicated device (eg: Kindle) version:
 
 [https://jimmyff.github.io/crypto-clock/](https://jimmyff.github.io/crypto-clock/)
 
-Desktop/mobile version:
-
-[https://jimmyff.github.io/crypto-clock/desktop.html](https://jimmyff.github.io/crypto-clock/desktop.html)
 
 ---
 
