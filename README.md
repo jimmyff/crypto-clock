@@ -1,6 +1,6 @@
 # crypto-clock
 
-![Crypto Clock](https://raw.githubusercontent.com/jimmyff/crypto_clock/master/misc/photo.jpg)
+![Crypto Clock](https://github.com/jimmyff/crypto-clock/raw/master/misc/photo.jpg)
 
 A dashboard for cyrpto currencies intended to be shown on eink devices such as the Amazon Kindle. The project was inspired by cyrpto price tickers such as the 'block clock'. The crypto data comes from Binance's API. You can [read my write up](https://medium.com/@jimmyff/crypto-clock-the-crypto-currency-ticker-that-runs-on-a-kindle-2bc601244556?source=friends_link&sk=47d142779ce7969e8ee82a9ebb770a7f) detailing the project and watch a [quick video](https://www.youtube.com/watch?v=qPAcM4U1mio) demonstrating the Cyrpto Clock.
 
